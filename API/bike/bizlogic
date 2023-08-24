@@ -1,0 +1,72 @@
+package library
+
+import (
+	"Bike_management_system/model"
+	"database/sql"
+	"log"
+)
+
+func getUsersDb(db *sql.DB, users []model.User) []model.User {
+	rows,err:=db.Query(`SELECT * from user`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.close()
+
+	for rows.next(){
+		var userObj model.User
+		err:=rows.Scan(&userObj.user_id,&userObj.user_name,&userObj.user_address,userObj.user_mobile,userObj.user_email)
+		if err!=nil{
+			log.Fatal(err)
+		}else{
+			users=append(users, userObj)
+		}
+	}
+
+	if iterattionError:= rows.Err();err!=nil{
+		log.Fatal(iterattionError)
+	}
+
+	return users
+}
+
+func addUserDb(db*sql.DB, user model.User){
+	query:=`INSET INTO user (user_id,user_name,user_address,user_mobile,user_email) values (?,?,?,?,?)`
+	_,err:=db.Execute(query,user.user_id,user.user_name,user.user_address,User.user_mobile,user.user_email)
+	if err!=nil{
+		log.Fatal(err)
+	}
+	fmt.Println("User successfully created")
+}
+
+fun getUserDB(db*sql.DB,user model.User) targetUser model.User{
+	query=(`select * from user where user_id=?`)
+	row,readErr=db.Execute(query,user.user_id)
+	var resultedUser model.User
+	defer row.Close()
+	if readErr!=nil{
+		log.Fatal(err)
+	}
+	if row!=nil{
+		_,scanErr:row.Scan(&resultedUser.user_id,&resultedUser.user_name,&resultedUser.user_address,&resultedUser.user_mobile,&resultedUser.user_email)
+		if scanErr!=nil{
+			log.Fatal(scanErr)
+		}
+	}
+	return resultedUser
+}
+
+func delUserDB(db *sql.DB, user model.User){
+	query=`select user_id from user where user_id=?`
+	row,readErr:=db.Execute(query,user.user_id)
+	if readErr!=nil{
+		log.Fatal(readErr)
+	}
+	if row!=nil{
+		_,deleteErr:=db.Query(`delete from user where user_id=?`,user.user_id)
+		if deleteErr!=nil{
+			log.Fatal(deleteErr)
+		}
+		fmt.Println("User successfully deleted")
+	}
+}
