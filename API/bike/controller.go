@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -70,7 +71,7 @@ func getUser(w http.ResponseWriter,r *http.Request){
 	params := mux.Vars(r)
 	if dbConnection !=nil{
 		user:=GetUserDB(dbConnection,params["id"])
-		if isUserEmpty(user)==true{
+		if isObjEmpty(user)==true{
 			json.NewEncoder(w).Encode("No user with the given user id.")
 		}else{
 			json.NewEncoder(w).Encode(user)
@@ -78,7 +79,7 @@ func getUser(w http.ResponseWriter,r *http.Request){
 	}
 }
 
-func isUserEmpty(user model.User) bool{
+func isObjEmpty(user model.User) bool{
 	if user.UserID==0{
 		return true
 	}
@@ -101,4 +102,41 @@ func deleteUser(w http.ResponseWriter,r *http.Request){
 	}
 }
 
+func getBikes(w http.ResponseWriter,r *http.Request){
+	w.Header().Set("content-type","application/json")
+	resultedBikes:=GetBikesDB(dbConnection)
+	fmt.Print()
+	if len(resultedBikes)==0{
+		json.NewEncoder(w).Encode("There a re no bikes to show")
+	}else{
+		json.NewEncoder(w).Encode(resultedBikes)
+	}
+}
 
+func getBike(w http.ResponseWriter,r *http.Request){
+	w.Header().Set("content-type","application/json")
+	var resultedBike model.Bike
+	params:=mux.Vars(r)
+	bikeId,_:=strconv.Atoi(params["id"])
+	resultedBike=GetBikeDB(dbConnection,bikeId)
+	if resultedBike.BikeId==0{
+		json.NewEncoder(w).Encode("There is no bike with this id")
+	}else{
+		json.NewEncoder(w).Encode(resultedBike)
+	}
+}
+
+func updateBike(w http.ResponseWriter,r *http.Request){
+	var bikeObj model.Bike
+	json.NewDecoder(r.Body).Decode(&bikeObj)
+	bikeId:=bikeObj.BikeId
+	resultedBike:=GetBikeDB(dbConnection,bikeId)
+	if resultedBike.BikeId==0{
+		json.NewEncoder(w).Encode("No bike wi the given id")
+	}else{
+		isUpdated:=UpdateBikeDB(dbConnection,bikeObj)
+		if isUpdated{
+			json.NewEncoder(w).Encode("Successfully updated bike details.")
+		}
+	}
+}
